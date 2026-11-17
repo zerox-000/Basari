@@ -1,0 +1,395 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts <= request.time;
+    }
+
+    function isValidString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isValidUserProfile(data) {
+      return isValidString(data.userId, 1, 128) &&
+             data.userId == request.auth.uid &&
+             isValidString(data.firstName, 1, 50) &&
+             isValidString(data.lastName, 1, 50) &&
+             isValidString(data.gradeLevel, 1, 30) &&
+             isValidString(data.branch, 1, 40) &&
+             isValidString(data.targetExam, 1, 30) &&
+             (data.targetScore is int || data.targetScore is float) &&
+             data.targetScore >= 0 && data.targetScore <= 600 &&
+             data.dailyQuestionGoal is int &&
+             data.dailyQuestionGoal >= 1 && data.dailyQuestionGoal <= 1000 &&
+             isValidString(data.learningStyle, 1, 40) &&
+             isValidString(data.preferredStudyHours, 1, 50) &&
+             data.dailyStudyMinutes is int &&
+             data.dailyStudyMinutes >= 15 && data.dailyStudyMinutes <= 720 &&
+             data.themePalette in ['OCEAN', 'EMERALD', 'ROYAL', 'SUNSET', 'RUBY', 'INDIGO'] &&
+             data.darkModePref in ['SYSTEM', 'LIGHT', 'DARK'] &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidWrittenGrade(data, userId) {
+      return isValidString(data.userId, 1, 128) &&
+             data.userId == userId &&
+             isValidString(data.subjectId, 1, 64) &&
+             isValidString(data.subjectName, 1, 80) &&
+             isValidString(data.term, 1, 30) &&
+             isValidString(data.examType, 1, 30) &&
+             (data.score is int || data.score is float) &&
+             data.score >= 0 && data.score <= 100 &&
+             (!('note' in data) || (data.note is string && data.note.size() <= 300)) &&
+             data.recordedAtMillis is int &&
+             data.recordedAtMillis >= 0 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidQuestionLog(data, userId) {
+      return isValidString(data.userId, 1, 128) &&
+             data.userId == userId &&
+             isValidString(data.subjectId, 1, 64) &&
+             isValidString(data.subjectName, 1, 80) &&
+             isValidString(data.topicName, 1, 120) &&
+             data.difficulty in ['Kolay', 'Orta', 'Zor'] &&
+             isValidString(data.source, 1, 40) &&
+             data.totalCount is int && data.totalCount >= 1 && data.totalCount <= 1000 &&
+             data.correctCount is int && data.correctCount >= 0 && data.correctCount <= 1000 &&
+             data.wrongCount is int && data.wrongCount >= 0 && data.wrongCount <= 1000 &&
+             data.blankCount is int && data.blankCount >= 0 && data.blankCount <= 1000 &&
+             (data.correctCount + data.wrongCount + data.blankCount) == data.totalCount &&
+             data.recordedAtMillis is int && data.recordedAtMillis >= 0 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidMockExam(data, userId) {
+      return isValidString(data.userId, 1, 128) &&
+             data.userId == userId &&
+             isValidString(data.examTitle, 1, 100) &&
+             isValidString(data.examType, 1, 40) &&
+             data.totalCorrect is int && data.totalCorrect >= 0 && data.totalCorrect <= 300 &&
+             data.totalWrong is int && data.totalWrong >= 0 && data.totalWrong <= 300 &&
+             data.totalBlank is int && data.totalBlank >= 0 && data.totalBlank <= 300 &&
+             (data.totalNet is int || data.totalNet is float) &&
+             data.totalNet >= -100 && data.totalNet <= 300 &&
+             (data.estimatedScore is int || data.estimatedScore is float) &&
+             data.estimatedScore >= 0 && data.estimatedScore <= 600 &&
+             data.subjectResults is list &&
+             data.subjectResults.size() <= 20 &&
+             data.recordedAtMillis is int && data.recordedAtMillis >= 0 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidCustomCountdown(data, userId) {
+      return isValidString(data.userId, 1, 128) &&
+             data.userId == userId &&
+             isValidString(data.title, 1, 80) &&
+             isValidString(data.category, 1, 30) &&
+             data.targetDateMillis is int && data.targetDateMillis >= 0 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidAiReport(data, userId) {
+      return isValidString(data.userId, 1, 128) &&
+             data.userId == userId &&
+             isValidString(data.summary, 1, 2000) &&
+             data.weakAreas is list && data.weakAreas.size() <= 15 &&
+             data.priorityTasks is list && data.priorityTasks.size() <= 15 &&
+             data.studyTips is list && data.studyTips.size() <= 15 &&
+             data.resources is list && data.resources.size() <= 15 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidStudyPlan(data, userId) {
+      return isValidString(data.userId, 1, 128) &&
+             data.userId == userId &&
+             isValidString(data.planTitle, 1, 120) &&
+             isValidString(data.coachNote, 1, 1200) &&
+             data.sessions is list && data.sessions.size() <= 35 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidLeaderboardEntry(data, userId) {
+      return isValidString(data.userId, 1, 128) &&
+             data.userId == userId &&
+             isValidString(data.displayName, 1, 60) &&
+             isValidString(data.gradeLevel, 1, 30) &&
+             isValidString(data.branch, 1, 40) &&
+             isValidString(data.targetExam, 1, 30) &&
+             data.totalSolvedQuestions is int && data.totalSolvedQuestions >= 0 && data.totalSolvedQuestions <= 1000000 &&
+             data.totalCorrectQuestions is int && data.totalCorrectQuestions >= 0 && data.totalCorrectQuestions <= 1000000 &&
+             (data.averageWrittenGrade is int || data.averageWrittenGrade is float) &&
+             data.averageWrittenGrade >= 0 && data.averageWrittenGrade <= 100 &&
+             (data.latestMockNet is int || data.latestMockNet is float) &&
+             data.latestMockNet >= -100 && data.latestMockNet <= 300 &&
+             (data.rankingScore is int || data.rankingScore is float) &&
+             data.rankingScore >= 0 && data.rankingScore <= 1000000 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'firstName', 'lastName', 'gradeLevel', 'branch',
+                         'targetExam', 'targetScore', 'dailyQuestionGoal', 'learningStyle',
+                         'preferredStudyHours', 'dailyStudyMinutes', 'themePalette',
+                         'darkModePref', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'firstName', 'lastName', 'gradeLevel', 'branch',
+                         'targetExam', 'targetScore', 'dailyQuestionGoal', 'learningStyle',
+                         'preferredStudyHours', 'dailyStudyMinutes', 'themePalette',
+                         'darkModePref', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidUserProfile(incoming());
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'firstName', 'lastName', 'gradeLevel', 'branch',
+                         'targetExam', 'targetScore', 'dailyQuestionGoal', 'learningStyle',
+                         'preferredStudyHours', 'dailyStudyMinutes', 'themePalette',
+                         'darkModePref', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /writtenGrades/{gradeId} {
+        allow get: if isOwner(userId) && isValidId(gradeId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(gradeId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'subjectId', 'subjectName', 'term', 'examType',
+                           'score', 'recordedAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'subjectId', 'subjectName', 'term', 'examType',
+                           'score', 'note', 'recordedAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidWrittenGrade(incoming(), userId);
+        allow update: if isOwner(userId) &&
+                         isValidId(gradeId) &&
+                         isValidWrittenGrade(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'subjectId', 'subjectName', 'term', 'examType',
+                           'score', 'note', 'recordedAtMillis', 'updatedAt'
+                         ]);
+        allow delete: if isOwner(userId) && isValidId(gradeId);
+      }
+
+      match /questionLogs/{logId} {
+        allow get: if isOwner(userId) && isValidId(logId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(logId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'subjectId', 'subjectName', 'topicName', 'difficulty',
+                           'source', 'totalCount', 'correctCount', 'wrongCount', 'blankCount',
+                           'recordedAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'subjectId', 'subjectName', 'topicName', 'difficulty',
+                           'source', 'totalCount', 'correctCount', 'wrongCount', 'blankCount',
+                           'recordedAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidQuestionLog(incoming(), userId);
+        allow update: if isOwner(userId) &&
+                         isValidId(logId) &&
+                         isValidQuestionLog(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'subjectId', 'subjectName', 'topicName', 'difficulty',
+                           'source', 'totalCount', 'correctCount', 'wrongCount', 'blankCount',
+                           'recordedAtMillis', 'updatedAt'
+                         ]);
+        allow delete: if isOwner(userId) && isValidId(logId);
+      }
+
+      match /mockExams/{examId} {
+        allow get: if isOwner(userId) && isValidId(examId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(examId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'examTitle', 'examType', 'totalCorrect', 'totalWrong',
+                           'totalBlank', 'totalNet', 'estimatedScore', 'subjectResults',
+                           'recordedAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'examTitle', 'examType', 'totalCorrect', 'totalWrong',
+                           'totalBlank', 'totalNet', 'estimatedScore', 'subjectResults',
+                           'recordedAtMillis', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidMockExam(incoming(), userId);
+        allow update: if isOwner(userId) &&
+                         isValidId(examId) &&
+                         isValidMockExam(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'examTitle', 'examType', 'totalCorrect', 'totalWrong',
+                           'totalBlank', 'totalNet', 'estimatedScore', 'subjectResults',
+                           'recordedAtMillis', 'updatedAt'
+                         ]);
+        allow delete: if isOwner(userId) && isValidId(examId);
+      }
+
+      match /customCountdowns/{countdownId} {
+        allow get: if isOwner(userId) && isValidId(countdownId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(countdownId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'title', 'category', 'targetDateMillis',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'title', 'category', 'targetDateMillis',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidCustomCountdown(incoming(), userId);
+        allow update: if isOwner(userId) &&
+                         isValidId(countdownId) &&
+                         isValidCustomCountdown(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'title', 'category', 'targetDateMillis', 'updatedAt'
+                         ]);
+        allow delete: if isOwner(userId) && isValidId(countdownId);
+      }
+
+      match /aiReports/{reportId} {
+        allow get: if isOwner(userId) && isValidId(reportId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(reportId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'summary', 'weakAreas', 'priorityTasks',
+                           'studyTips', 'resources', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'summary', 'weakAreas', 'priorityTasks',
+                           'studyTips', 'resources', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidAiReport(incoming(), userId);
+        allow update: if isOwner(userId) &&
+                         isValidId(reportId) &&
+                         isValidAiReport(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'summary', 'weakAreas', 'priorityTasks',
+                           'studyTips', 'resources', 'updatedAt'
+                         ]);
+        allow delete: if isOwner(userId) && isValidId(reportId);
+      }
+
+      match /studyPlans/{planId} {
+        allow get: if isOwner(userId) && isValidId(planId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(planId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'planTitle', 'coachNote', 'sessions',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'planTitle', 'coachNote', 'sessions',
+                           'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidStudyPlan(incoming(), userId);
+        allow update: if isOwner(userId) &&
+                         isValidId(planId) &&
+                         isValidStudyPlan(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'planTitle', 'coachNote', 'sessions', 'updatedAt'
+                         ]);
+        allow delete: if isOwner(userId) && isValidId(planId);
+      }
+    }
+
+    // Public split-collection leaderboard (non-PII only)
+    match /leaderboard/{userId} {
+      allow get: if isSignedIn() && isValidId(userId);
+      allow list: if isSignedIn();
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'displayName', 'gradeLevel', 'branch', 'targetExam',
+                         'totalSolvedQuestions', 'totalCorrectQuestions',
+                         'averageWrittenGrade', 'latestMockNet', 'rankingScore',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'displayName', 'gradeLevel', 'branch', 'targetExam',
+                         'totalSolvedQuestions', 'totalCorrectQuestions',
+                         'averageWrittenGrade', 'latestMockNet', 'rankingScore',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidLeaderboardEntry(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidLeaderboardEntry(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'displayName', 'gradeLevel', 'branch', 'targetExam',
+                         'totalSolvedQuestions', 'totalCorrectQuestions',
+                         'averageWrittenGrade', 'latestMockNet', 'rankingScore',
+                         'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+    }
+  }
+}

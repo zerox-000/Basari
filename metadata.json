@@ -1,0 +1,6 @@
+{
+  "name": "Başarı Pusulası",
+  "description": "MEB müfredatına uyumlu yazılı notu, soru bankası, deneme takibi ve yapay zeka destekli akademik başarı yönetim uygulaması.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

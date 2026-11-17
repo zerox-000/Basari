@@ -1,0 +1,273 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private user academic profile, goals, study preferences, and UI customization settings.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID." },
+        "firstName": { "type": "string", "description": "Student first name." },
+        "lastName": { "type": "string", "description": "Student last name." },
+        "gradeLevel": { "type": "string", "description": "Selected MEB grade level." },
+        "branch": { "type": "string", "description": "Selected academic branch/track." },
+        "targetExam": { "type": "string", "description": "Primary target exam such as YKS, LGS, or Okul Başarısı." },
+        "targetScore": { "type": "number", "description": "Target exam score or GPA goal." },
+        "dailyQuestionGoal": { "type": "integer", "description": "Daily solved question goal." },
+        "learningStyle": { "type": "string", "description": "Preferred learning style." },
+        "preferredStudyHours": { "type": "string", "description": "Preferred study time window." },
+        "dailyStudyMinutes": { "type": "integer", "description": "Target daily study duration in minutes." },
+        "themePalette": { "type": "string", "description": "Selected UI color theme palette key." },
+        "darkModePref": { "type": "string", "description": "Theme brightness preference (SYSTEM, LIGHT, DARK)." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update." }
+      },
+      "required": [
+        "userId",
+        "firstName",
+        "lastName",
+        "gradeLevel",
+        "branch",
+        "targetExam",
+        "targetScore",
+        "dailyQuestionGoal",
+        "learningStyle",
+        "preferredStudyHours",
+        "dailyStudyMinutes",
+        "themePalette",
+        "darkModePref",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "WrittenGrade": {
+      "title": "WrittenGrade",
+      "description": "Written exam or performance grade entry for a MEB curriculum subject.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "subjectName": { "type": "string" },
+        "term": { "type": "string" },
+        "examType": { "type": "string" },
+        "score": { "type": "number" },
+        "note": { "type": "string" },
+        "recordedAtMillis": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "subjectId",
+        "subjectName",
+        "term",
+        "examType",
+        "score",
+        "recordedAtMillis",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "QuestionLog": {
+      "title": "QuestionLog",
+      "description": "Solved question count and accuracy log linked to a MEB subject, topic, and difficulty.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "subjectName": { "type": "string" },
+        "topicName": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "source": { "type": "string" },
+        "totalCount": { "type": "integer" },
+        "correctCount": { "type": "integer" },
+        "wrongCount": { "type": "integer" },
+        "blankCount": { "type": "integer" },
+        "recordedAtMillis": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "subjectId",
+        "subjectName",
+        "topicName",
+        "difficulty",
+        "source",
+        "totalCount",
+        "correctCount",
+        "wrongCount",
+        "blankCount",
+        "recordedAtMillis",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MockExam": {
+      "title": "MockExam",
+      "description": "Mock exam record containing overall net, score estimate, and per-subject breakdowns.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "examTitle": { "type": "string" },
+        "examType": { "type": "string" },
+        "totalCorrect": { "type": "integer" },
+        "totalWrong": { "type": "integer" },
+        "totalBlank": { "type": "integer" },
+        "totalNet": { "type": "number" },
+        "estimatedScore": { "type": "number" },
+        "subjectResults": { "type": "array" },
+        "recordedAtMillis": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "examTitle",
+        "examType",
+        "totalCorrect",
+        "totalWrong",
+        "totalBlank",
+        "totalNet",
+        "estimatedScore",
+        "subjectResults",
+        "recordedAtMillis",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CustomCountdown": {
+      "title": "CustomCountdown",
+      "description": "User-created exam, written week, or holiday countdown entry.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "targetDateMillis": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "title",
+        "category",
+        "targetDateMillis",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AiReport": {
+      "title": "AiReport",
+      "description": "AI-generated study recommendation report identifying weak subjects/topics and study plans.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "summary": { "type": "string" },
+        "weakAreas": { "type": "array" },
+        "priorityTasks": { "type": "array" },
+        "studyTips": { "type": "array" },
+        "resources": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "summary",
+        "weakAreas",
+        "priorityTasks",
+        "studyTips",
+        "resources",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LeaderboardEntry": {
+      "title": "LeaderboardEntry",
+      "description": "Public non-PII student ranking entry for online leaderboard and public profile cards.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "displayName": { "type": "string" },
+        "gradeLevel": { "type": "string" },
+        "branch": { "type": "string" },
+        "targetExam": { "type": "string" },
+        "totalSolvedQuestions": { "type": "integer" },
+        "totalCorrectQuestions": { "type": "integer" },
+        "averageWrittenGrade": { "type": "number" },
+        "latestMockNet": { "type": "number" },
+        "rankingScore": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "displayName",
+        "gradeLevel",
+        "branch",
+        "targetExam",
+        "totalSolvedQuestions",
+        "totalCorrectQuestions",
+        "averageWrittenGrade",
+        "latestMockNet",
+        "rankingScore",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StudyPlan": {
+      "title": "StudyPlan",
+      "description": "AI-generated personalized weekly study schedule with trackable sessions.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "planTitle": { "type": "string" },
+        "coachNote": { "type": "string" },
+        "sessions": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId",
+        "planTitle",
+        "coachNote",
+        "sessions",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private academic profile document owned by userId."
+    },
+    "/users/{userId}/writtenGrades/{gradeId}": {
+      "schema": { "$ref": "#/entities/WrittenGrade" },
+      "description": "Written exam grade entries for userId."
+    },
+    "/users/{userId}/questionLogs/{logId}": {
+      "schema": { "$ref": "#/entities/QuestionLog" },
+      "description": "Solved question count and question bank accuracy records for userId."
+    },
+    "/users/{userId}/mockExams/{examId}": {
+      "schema": { "$ref": "#/entities/MockExam" },
+      "description": "Mock exam records and results for userId."
+    },
+    "/users/{userId}/customCountdowns/{countdownId}": {
+      "schema": { "$ref": "#/entities/CustomCountdown" },
+      "description": "Custom countdown items for userId."
+    },
+    "/users/{userId}/aiReports/{reportId}": {
+      "schema": { "$ref": "#/entities/AiReport" },
+      "description": "Persisted AI feedback reports for userId."
+    },
+    "/users/{userId}/studyPlans/{planId}": {
+      "schema": { "$ref": "#/entities/StudyPlan" },
+      "description": "Personalized weekly study schedules generated for userId."
+    },
+    "/leaderboard/{userId}": {
+      "schema": { "$ref": "#/entities/LeaderboardEntry" },
+      "description": "Public online leaderboard ranking entries without PII."
+    }
+  }
+}
