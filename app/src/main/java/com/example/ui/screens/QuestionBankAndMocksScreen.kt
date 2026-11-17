@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -347,7 +348,7 @@ private fun QuestionCard(
                 ) {
                     OutlinedButton(
                         onClick = { onManualMark("Doğru") },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).heightIn(min = 48.dp),
                         contentPadding = PaddingValues(horizontal = 6.dp)
                     ) {
                         Icon(Icons.Rounded.Check, null, tint = StatusSuccess, modifier = Modifier.size(16.dp))
@@ -356,7 +357,7 @@ private fun QuestionCard(
                     }
                     OutlinedButton(
                         onClick = { onManualMark("Yanlış") },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).heightIn(min = 48.dp),
                         contentPadding = PaddingValues(horizontal = 6.dp)
                     ) {
                         Icon(Icons.Rounded.Close, null, tint = StatusError, modifier = Modifier.size(16.dp))
@@ -365,7 +366,7 @@ private fun QuestionCard(
                     }
                     OutlinedButton(
                         onClick = { onManualMark("Boş") },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).heightIn(min = 48.dp),
                         contentPadding = PaddingValues(horizontal = 6.dp)
                     ) {
                         Icon(Icons.Rounded.HelpOutline, null, tint = StatusWarning, modifier = Modifier.size(16.dp))
@@ -580,7 +581,7 @@ private fun CreateMockExamDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(420.dp)
+                    .heightIn(max = 420.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {

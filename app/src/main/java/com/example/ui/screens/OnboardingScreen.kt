@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -43,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,18 +70,22 @@ fun OnboardingScreen(
     isSaving: Boolean,
     onSaveProfile: (UserProfile) -> Unit
 ) {
-    var step by remember { mutableIntStateOf(0) } // 0: Sınıf, 1: Bölüm, 2: Profil & MEB Ders Listesi
-    var selectedGrade by remember { mutableStateOf("12. Sınıf") }
+    var step by rememberSaveable { mutableIntStateOf(0) } // 0: Sınıf, 1: Bölüm, 2: Profil & MEB Ders Listesi
+    var selectedGrade by rememberSaveable { mutableStateOf("12. Sınıf") }
     val availableBranches = remember(selectedGrade) { CurriculumCatalog.branchesForGrade(selectedGrade) }
-    var selectedBranch by remember(selectedGrade) { mutableStateOf(availableBranches.first()) }
+    var selectedBranch by rememberSaveable(selectedGrade) { mutableStateOf(availableBranches.first()) }
 
-    var firstName by remember { mutableStateOf(initialFirstName) }
-    var lastName by remember { mutableStateOf(initialLastName) }
-    var targetScoreText by remember { mutableStateOf("450") }
-    var dailyGoalText by remember { mutableStateOf("100") }
-    var dailyMinutesText by remember { mutableStateOf("180") }
-    var learningStyle by remember { mutableStateOf(CurriculumCatalog.learningStyles.first()) }
-    var studyHours by remember { mutableStateOf(CurriculumCatalog.studyHourWindows[2]) }
+    var firstName by rememberSaveable { mutableStateOf(initialFirstName) }
+    var lastName by rememberSaveable { mutableStateOf(initialLastName) }
+    var targetScoreText by rememberSaveable { mutableStateOf("450") }
+    var dailyGoalText by rememberSaveable { mutableStateOf("100") }
+    var dailyMinutesText by rememberSaveable { mutableStateOf("180") }
+    var learningStyle by rememberSaveable { mutableStateOf(CurriculumCatalog.learningStyles.first()) }
+    var studyHours by rememberSaveable { mutableStateOf(CurriculumCatalog.studyHourWindows[2]) }
+
+    BackHandler(enabled = step > 0) {
+        step -= 1
+    }
 
     val generatedSubjects = remember(selectedGrade, selectedBranch) {
         CurriculumCatalog.subjectsFor(selectedGrade, selectedBranch)
@@ -89,6 +96,7 @@ fun OnboardingScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .systemBarsPadding()
+            .imePadding()
     ) {
         Column(
             modifier = Modifier
@@ -312,20 +320,20 @@ fun OnboardingScreen(
                                     OutlinedTextField(
                                         value = dailyGoalText,
                                         onValueChange = { dailyGoalText = it.filter { ch -> ch.isDigit() } },
-                                        label = { Text("Günlük Soru") },
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                        singleLine = true,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    OutlinedTextField(
-                                        value = dailyMinutesText,
-                                        onValueChange = { dailyMinutesText = it.filter { ch -> ch.isDigit() } },
-                                        label = { Text("Günlük Dk") },
+                                        label = { Text("Günlük Soru Hedefi") },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = Modifier.weight(1f)
                                     )
                                 }
+                                OutlinedTextField(
+                                    value = dailyMinutesText,
+                                    onValueChange = { dailyMinutesText = it.filter { ch -> ch.isDigit() } },
+                                    label = { Text("Günlük Çalışma Süresi (dk)") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
 
                                 Text(
                                     text = "Öğrenme Stilin",

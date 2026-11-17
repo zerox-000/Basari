@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -42,6 +44,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -66,9 +69,12 @@ import com.example.ui.theme.ThemePalette
 fun ProfileAndThemeScreen(
     userId: String,
     profile: UserProfile,
+    accountEmail: String,
+    rememberLogin: Boolean,
     currentPalette: ThemePalette,
     currentDarkMode: DarkModePref,
     isSaving: Boolean,
+    onToggleRememberLogin: (Boolean) -> Unit,
     onSelectPalette: (ThemePalette) -> Unit,
     onSelectDarkMode: (DarkModePref) -> Unit,
     onSaveProfile: (UserProfile) -> Unit,
@@ -112,7 +118,8 @@ fun ProfileAndThemeScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .imePadding(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -155,6 +162,7 @@ fun ProfileAndThemeScreen(
                                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                                     ),
                                     modifier = Modifier
+                                        .heightIn(min = 48.dp)
                                         .clickable { onSelectPalette(pal) }
                                         .testTag("theme_palette_${pal.key}")
                                 ) {
@@ -282,20 +290,20 @@ fun ProfileAndThemeScreen(
                             OutlinedTextField(
                                 value = dailyGoal,
                                 onValueChange = { dailyGoal = it.filter { ch -> ch.isDigit() } },
-                                label = { Text("Günlük Soru") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                singleLine = true,
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = dailyMinutes,
-                                onValueChange = { dailyMinutes = it.filter { ch -> ch.isDigit() } },
-                                label = { Text("Süre (dk)") },
+                                label = { Text("Günlük Soru Hedefi") },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
                             )
                         }
+                        OutlinedTextField(
+                            value = dailyMinutes,
+                            onValueChange = { dailyMinutes = it.filter { ch -> ch.isDigit() } },
+                            label = { Text("Günlük Çalışma Süresi (dk)") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
                         Text("Öğrenme Stili", style = MaterialTheme.typography.labelLarge)
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -380,6 +388,46 @@ fun ProfileAndThemeScreen(
                                 Text("Profili & Dersleri Güncelle")
                             }
                         }
+                    }
+                }
+            }
+
+            // Session Persistence / Remember Login Card
+            item {
+                ElevatedCard(
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f).padding(end = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Text(
+                                text = "Oturumu ve Giriş Bilgilerini Hatırla",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (accountEmail.isNotBlank()) {
+                                    "Kayıtlı hesap: $accountEmail • Uygulama açılışında oturumun korunur."
+                                } else {
+                                    "Uygulama her açıldığında otomatik oturum açık kalsın."
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = rememberLogin,
+                            onCheckedChange = onToggleRememberLogin,
+                            modifier = Modifier.testTag("profile_remember_login_switch")
+                        )
                     }
                 }
             }

@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.data.model.StudyPlan
 import com.example.data.model.UiState
@@ -138,7 +139,13 @@ fun AnalyticsAndAiScreen(
                             ),
                             modifier = Modifier.testTag("granularity_${g.name}")
                         ) {
-                            Text(g.label, maxLines = 1)
+                            Text(
+                                text = g.label,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.labelMedium
+                            )
                         }
                     }
                 }
@@ -540,7 +547,9 @@ private fun ComparisonBadge(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = current,
