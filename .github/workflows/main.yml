@@ -10,13 +10,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Eksik Keystore ve Firebase Dosyasini Olustur
+      - name: Keystore ve Firebase Dosyasini Olustur
         run: |
           keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          if [ ! -f app/google-services.json ]; then
-            PKG=$(grep -E "namespace|applicationId" app/build.gradle* | head -n 1 | sed -E 's/.*["'\'']([^"'\'']+)["'\''].*/\1/')
-            [ -z "$PKG" ] && PKG="com.example.basari"
-            cat <<EOF > app/google-services.json
+          cat << 'EOF' > app/google-services.json
           {
             "project_info": {
               "project_number": "123456789000",
@@ -28,7 +25,7 @@ jobs:
                 "client_info": {
                   "mobilesdk_app_id": "1:123456789000:android:1234567890abcdef",
                   "android_client_info": {
-                    "package_name": "$PKG"
+                    "package_name": "com.aistudio.basaripusulasi.k7mwxa"
                   }
                 },
                 "oauth_client": [
@@ -57,7 +54,6 @@ jobs:
             "configuration_version": "1"
           }
           EOF
-          fi
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
