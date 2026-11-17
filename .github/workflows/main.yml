@@ -10,10 +10,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Keystore ve Firebase Dosyasini Olustur
+      - name: Sabit Keystore ve SHA1 Goster
         run: |
-          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          python3 -c 'import re, json; txt=open("app/build.gradle.kts").read(); m=re.search(r"applicationId\s*=\s*\"([^\"]+)\"", txt); pkg=m.group(1) if m else "com.aistudio.basaripusulasi.k7mwxa"; print("BULUNAN PAKET:", pkg); data={"project_info":{"project_number":"123456789000","project_id":"basari-pusulasi","storage_bucket":"://appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789000:android:1234567890abcdef","android_client_info":{"package_name":pkg}},"oauth_client":[{"client_id":"://googleusercontent.com","client_type":3}],"api_key":[{"current_key":"AIzaSyDummyKeyForBuild1234567890"}],"services":{"appinvite_service":{"other_platform_oauth_client":[{"client_id":"://googleusercontent.com","client_type":3}]}}}],"configuration_version":"1"}; open("app/google-services.json","w").write(json.dumps(data))'
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=BasariPusulasi,O=Android,C=TR"
+          keytool -list -v -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android | grep -E "SHA1:|SHA256:"
+          grep "applicationId" app/build.gradle.kts || true
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.3.1'
